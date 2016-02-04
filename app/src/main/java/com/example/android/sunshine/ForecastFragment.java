@@ -127,7 +127,7 @@ public class ForecastFragment extends Fragment {
 
             final String units = "metric";
             final String format = "json";
-            final String appid = "9779acdcfa230154081c5d5f1ef29c2f";
+            final String appId = "9779acdcfa230154081c5d5f1ef29c2f";
             final String days = "7";
 
             try {
@@ -148,7 +148,7 @@ public class ForecastFragment extends Fragment {
                         appendQueryParameter(UNITS_PARAM, units).
                         appendQueryParameter(FORMAT_PARAM, format).
                         appendQueryParameter(DAYS_PARAM, days).
-                        appendQueryParameter(APPID_PARAM, appid);
+                        appendQueryParameter(APPID_PARAM, appId);
                 URL url = new URL(uriBuilder.build().toString());
 
                 urlConnection = (HttpURLConnection) url.openConnection();
