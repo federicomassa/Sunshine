@@ -4,6 +4,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.text.format.Time;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -24,6 +25,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -35,6 +37,8 @@ public class ForecastFragment extends Fragment {
 
     public ForecastFragment() {
     }
+
+    private ArrayAdapter<String> mForecastAdapter = null;
 
     final String LOG_TAG = ForecastFragment.class.getSimpleName();
     //                              Format  Unit     Days   AppId
@@ -67,8 +71,8 @@ public class ForecastFragment extends Fragment {
 
         List<String> weekForecast = new ArrayList<String>(Arrays.asList(forecastArray));
 
-        ArrayAdapter<String> mForecastAdapter =
-                new ArrayAdapter<String>(
+        mForecastAdapter =
+                new ArrayAdapter<>(
                         this.getActivity(),
                         R.layout.list_item_forecast,
                         R.id.list_item_forecast_textview,
@@ -85,8 +89,8 @@ public class ForecastFragment extends Fragment {
 
         int id = item.getItemId();
         if (id == R.id.action_refresh) {
-            final String postalCode = "09047";
-            final String city = "Selargius";
+            final String postalCode = "56127";
+            final String city = "Pisa";
             final String countryCode = "IT";
             final String[] forecastParameters = new String[] {postalCode, city, countryCode};
             FetchWeatherTask weatherTask = new FetchWeatherTask();
@@ -97,26 +101,9 @@ public class ForecastFragment extends Fragment {
     }
 
 
-    private class FetchWeatherTask extends AsyncTask<String, Void, Void> {
+    private class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
 
-        protected Void doInBackground(String...params) {
-            final String weatherJsonStr = "{\"city\":{\"id\":6537912,\"name\":\"Selargius\",\"coord\":{\"lon\":9.16755,\"lat\":39.256641},\"country\":\"IT\",\"population\":0},\"cod\":\"200\",\"message\":0.0125,\"cnt\":7,\"list\":[{\"dt\":1454497200,\"temp\":{\"day\":286.32,\"min\":285.43,\"max\":286.32,\"night\":285.43,\"eve\":286.32,\"morn\":286.32},\"pressure\":1026.66,\"humidity\":89,\"weather\":[{\"id\":802,\"main\":\"Clouds\",\"description\":\"scattered clouds\",\"icon\":\"03n\"}],\"speed\":10.92,\"deg\":325,\"clouds\":44},{\"dt\":1454583600,\"temp\":{\"day\":287.13,\"min\":284.34,\"max\":287.13,\"night\":284.46,\"eve\":285.4,\"morn\":284.34},\"pressure\":1031.5,\"humidity\":81,\"weather\":[{\"id\":800,\"main\":\"Clear\",\"description\":\"sky is clear\",\"icon\":\"01d\"}],\"speed\":7.81,\"deg\":324,\"clouds\":0},{\"dt\":1454670000,\"temp\":{\"day\":287.78,\"min\":283.32,\"max\":287.78,\"night\":283.32,\"eve\":286.75,\"morn\":286.23},\"pressure\":1031.28,\"humidity\":86,\"weather\":[{\"id\":500,\"main\":\"Rain\",\"description\":\"light rain\",\"icon\":\"10d\"}],\"speed\":6.99,\"deg\":308,\"clouds\":88},{\"dt\":1454756400,\"temp\":{\"day\":288.25,\"min\":282.41,\"max\":288.27,\"night\":285.02,\"eve\":287.42,\"morn\":282.41},\"pressure\":1030.55,\"humidity\":86,\"weather\":[{\"id\":801,\"main\":\"Clouds\",\"description\":\"few clouds\",\"icon\":\"02d\"}],\"speed\":6.46,\"deg\":139,\"clouds\":24},{\"dt\":1454842800,\"temp\":{\"day\":289.78,\"min\":284.54,\"max\":289.78,\"night\":285.52,\"eve\":286.97,\"morn\":284.54},\"pressure\":1023.01,\"humidity\":78,\"weather\":[{\"id\":500,\"main\":\"Rain\",\"description\":\"light rain\",\"icon\":\"10d\"}],\"speed\":6.3,\"deg\":221,\"clouds\":88,\"rain\":1.35},{\"dt\":1454929200,\"temp\":{\"day\":289.14,\"min\":285.95,\"max\":289.14,\"night\":288.39,\"eve\":288.21,\"morn\":285.95},\"pressure\":1023.54,\"humidity\":0,\"weather\":[{\"id\":500,\"main\":\"Rain\",\"description\":\"light rain\",\"icon\":\"10d\"}],\"speed\":7.82,\"deg\":259,\"clouds\":30,\"rain\":0.76},{\"dt\":1455015600,\"temp\":{\"day\":288.23,\"min\":286.86,\"max\":288.23,\"night\":286.86,\"eve\":286.89,\"morn\":287.74},\"pressure\":1026.73,\"humidity\":0,\"weather\":[{\"id\":500,\"main\":\"Rain\",\"description\":\"light rain\",\"icon\":\"10d\"}],\"speed\":15.01,\"deg\":309,\"clouds\":2}]}";
-
-            try {
-                final JSONObject reader = new JSONObject(weatherJsonStr);
-                final JSONArray forecastList = reader.getJSONArray("list");
-                final JSONObject forecastDay = forecastList.getJSONObject(0);
-                final JSONObject forecastTemp = forecastDay.getJSONObject("temp");
-                Double maxTemp = forecastTemp.getDouble("max");
-            }
-            catch (JSONException e) {
-                Log.e(LOG_TAG, "JSONException found");
-            }
-
-            return null;
-        }
-
-        protected Void doInBackgroundTRUE(String... params) {
+        protected String[] doInBackground(String... params) {
             //These two need to be declared outside the try/catch
             // so that they can be closed in the finally block.
             HttpURLConnection urlConnection = null;
@@ -195,12 +182,126 @@ public class ForecastFragment extends Fragment {
                         reader.close();
                     } catch (final IOException e) {
                         Log.e(LOG_TAG, "Error closing stream", e);
+                        e.printStackTrace();
                     }
                 }
             }
 
+            try {
+                return getWeatherDataFromJson(forecastJsonStr, 7);
+            }
+            catch (JSONException e) {
+                Log.e(LOG_TAG, "JSONException during parsing");
+                e.printStackTrace();
+            }
             return null;
         }
+
+        protected void onPostExecute(String[] result) {
+            mForecastAdapter.clear();
+            //equivalent to addAll(result) but compatible with API < 11
+            for (String c: result)
+                mForecastAdapter.add(c);
+        }
+
+    }
+
+    /* The date/time conversion code is going to be moved outside the asynctask later,
+        * so for convenience we're breaking it out into its own method now.
+        */
+    private String getReadableDateString(long time){
+        // Because the API returns a unix timestamp (measured in seconds),
+        // it must be converted to milliseconds in order to be converted to valid date.
+        SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE MMM dd");
+        return shortenedDateFormat.format(time);
+    }
+
+    /**
+     * Prepare the weather high/lows for presentation.
+     */
+    private String formatHighLows(double high, double low) {
+        // For presentation, assume the user doesn't care about tenths of a degree.
+        long roundedHigh = Math.round(high);
+        long roundedLow = Math.round(low);
+
+        return (roundedHigh + "/" + roundedLow);
+    }
+
+    /**
+     * Take the String representing the complete forecast in JSON Format and
+     * pull out the data we need to construct the Strings needed for the wireframes.
+     *
+     * Fortunately parsing is easy:  constructor takes the JSON string and converts it
+     * into an Object hierarchy for us.
+     */
+    private String[] getWeatherDataFromJson(String forecastJsonStr, int numDays)
+            throws JSONException {
+
+        // These are the names of the JSON objects that need to be extracted.
+        final String OWM_LIST = "list";
+        final String OWM_WEATHER = "weather";
+        final String OWM_TEMPERATURE = "temp";
+        final String OWM_MAX = "max";
+        final String OWM_MIN = "min";
+        final String OWM_DESCRIPTION = "main";
+
+        JSONObject forecastJson = new JSONObject(forecastJsonStr);
+        JSONArray weatherArray = forecastJson.getJSONArray(OWM_LIST);
+
+        // OWM returns daily forecasts based upon the local time of the city that is being
+        // asked for, which means that we need to know the GMT offset to translate this data
+        // properly.
+
+        // Since this data is also sent in-order and the first day is always the
+        // current day, we're going to take advantage of that to get a nice
+        // normalized UTC date for all of our weather.
+
+        Time dayTime = new Time();
+        dayTime.setToNow();
+
+        // we start at the day returned by local time. Otherwise this is a mess.
+        int julianStartDay = Time.getJulianDay(System.currentTimeMillis(), dayTime.gmtoff);
+
+        // now we work exclusively in UTC
+        dayTime = new Time();
+
+        String[] resultStrs = new String[numDays];
+        for(int i = 0; i < weatherArray.length(); i++) {
+            // For now, using the format "Day, description, hi/low"
+            String day;
+            String description;
+            String highAndLow;
+
+            // Get the JSON object representing the day
+            JSONObject dayForecast = weatherArray.getJSONObject(i);
+
+            // The date/time is returned as a long.  We need to convert that
+            // into something human-readable, since most people won't read "1400356800" as
+            // "this saturday".
+            long dateTime;
+            // Cheating to convert this to UTC time, which is what we want anyhow
+            dateTime = dayTime.setJulianDay(julianStartDay+i);
+            day = getReadableDateString(dateTime);
+
+            // description is in a child array called "weather", which is 1 element long.
+            JSONObject weatherObject = dayForecast.getJSONArray(OWM_WEATHER).getJSONObject(0);
+            description = weatherObject.getString(OWM_DESCRIPTION);
+
+            // Temperatures are in a child object called "temp".  Try not to name variables
+            // "temp" when working with temperature.  It confuses everybody.
+            JSONObject temperatureObject = dayForecast.getJSONObject(OWM_TEMPERATURE);
+            double high = temperatureObject.getDouble(OWM_MAX);
+            double low = temperatureObject.getDouble(OWM_MIN);
+
+            highAndLow = formatHighLows(high, low);
+            resultStrs[i] = day + " - " + description + " - " + highAndLow;
+        }
+
+        for (String s : resultStrs) {
+            Log.v(LOG_TAG, "Forecast entry: " + s);
+        }
+        return resultStrs;
+
     }
 
 }
