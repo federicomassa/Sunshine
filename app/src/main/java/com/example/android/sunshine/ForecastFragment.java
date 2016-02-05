@@ -12,8 +12,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -80,7 +82,13 @@ public class ForecastFragment extends Fragment {
 
         ListView mListView = (ListView) rootView.findViewById(R.id.listview_forecast);
         mListView.setAdapter(mForecastAdapter);
-
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Toast toast = Toast.makeText(getActivity(), mForecastAdapter.getItem(position), Toast.LENGTH_SHORT);
+                toast.show();
+            }
+        });
         return rootView;
     }
 
@@ -165,8 +173,7 @@ public class ForecastFragment extends Fragment {
                 }
 
                 forecastJsonStr = buffer.toString();
-                Log.v(LOG_TAG, "Forecast JSON String: " + forecastJsonStr);
-            } catch (IOException e)
+                } catch (IOException e)
 
             {
                 Log.e(LOG_TAG, "Error ", e);
@@ -198,10 +205,12 @@ public class ForecastFragment extends Fragment {
         }
 
         protected void onPostExecute(String[] result) {
-            mForecastAdapter.clear();
-            //equivalent to addAll(result) but compatible with API < 11
-            for (String c: result)
-                mForecastAdapter.add(c);
+            if (result != null) {
+                mForecastAdapter.clear();
+                //equivalent to addAll(result) but compatible with API < 11
+                for (String c : result)
+                    mForecastAdapter.add(c);
+            }
         }
 
     }
@@ -297,9 +306,6 @@ public class ForecastFragment extends Fragment {
             resultStrs[i] = day + " - " + description + " - " + highAndLow;
         }
 
-        for (String s : resultStrs) {
-            Log.v(LOG_TAG, "Forecast entry: " + s);
-        }
         return resultStrs;
 
     }
