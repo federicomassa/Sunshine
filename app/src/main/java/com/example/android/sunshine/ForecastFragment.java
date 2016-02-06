@@ -1,5 +1,6 @@
 package com.example.android.sunshine;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
@@ -43,7 +44,6 @@ public class ForecastFragment extends Fragment {
     private ArrayAdapter<String> mForecastAdapter = null;
 
     final String LOG_TAG = ForecastFragment.class.getSimpleName();
-    //                              Format  Unit     Days   AppId
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -85,8 +85,10 @@ public class ForecastFragment extends Fragment {
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast toast = Toast.makeText(getActivity(), mForecastAdapter.getItem(position), Toast.LENGTH_SHORT);
-                toast.show();
+                //Create intent to go to DetailActivity
+                String forecast = mForecastAdapter.getItem(position);
+                Intent intent = new Intent(getActivity(), DetailActivity.class).putExtra(Intent.EXTRA_TEXT, forecast);
+                startActivity(intent);
             }
         });
         return rootView;
@@ -207,9 +209,7 @@ public class ForecastFragment extends Fragment {
         protected void onPostExecute(String[] result) {
             if (result != null) {
                 mForecastAdapter.clear();
-                //equivalent to addAll(result) but compatible with API < 11
-                for (String c : result)
-                    mForecastAdapter.add(c);
+                mForecastAdapter.addAll(result);
             }
         }
 

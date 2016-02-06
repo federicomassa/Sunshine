@@ -4,4 +4,5 @@
     <string name="list_item_forecast_textview_content">Today - Sunny - 88/63</string>
     <string name="refresh_button">Refresh</string>
     <string name="title_activity_detail">DetailActivity</string>
+    <string name="title_activity_settings">SettingsActivity</string>
 </resources>
