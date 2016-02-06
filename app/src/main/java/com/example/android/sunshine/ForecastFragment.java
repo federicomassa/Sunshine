@@ -103,7 +103,8 @@ public class ForecastFragment extends Fragment {
     public void updateWeather() {
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getContext());
         String location = pref.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
-        final String[] forecastParameters = new String[] {location};
+        String temperature = pref.getString(getString(R.string.pref_temperature_key), getString(R.string.pref_temperature_default));
+        final String[] forecastParameters = new String[] {location, temperature};
         FetchWeatherTask weatherTask = new FetchWeatherTask();
         weatherTask.execute(forecastParameters);
     }
@@ -119,8 +120,6 @@ public class ForecastFragment extends Fragment {
 
             //Will contain the raw JSON response as a string;
             String forecastJsonStr = null;
-
-            final String units = "metric";
             final String format = "json";
             final String appId = "9779acdcfa230154081c5d5f1ef29c2f";
             final String days = "7";
@@ -140,7 +139,7 @@ public class ForecastFragment extends Fragment {
                 Uri.Builder uriBuilder = new Uri.Builder();
                 uriBuilder = Uri.parse(FORECAST_BASE_URL).buildUpon();
                 uriBuilder.appendQueryParameter(QUERY_PARAM, params[0]).
-                        appendQueryParameter(UNITS_PARAM, units).
+                        appendQueryParameter(UNITS_PARAM, params[1]).
                         appendQueryParameter(FORMAT_PARAM, format).
                         appendQueryParameter(DAYS_PARAM, days).
                         appendQueryParameter(APPID_PARAM, appId);
