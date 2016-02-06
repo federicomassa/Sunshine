@@ -1,8 +1,11 @@
 package com.example.android.sunshine;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.media.audiofx.BassBoost;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.text.format.Time;
@@ -99,7 +102,9 @@ public class ForecastFragment extends Fragment {
 
         int id = item.getItemId();
         if (id == R.id.action_refresh) {
-            final String postalCode = "56127";
+            SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getContext());
+            String postalCode = pref.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
+            Log.v(LOG_TAG, "Fetching postal code from pref: " + postalCode);
             final String city = "Pisa";
             final String countryCode = "IT";
             final String[] forecastParameters = new String[] {postalCode, city, countryCode};
@@ -141,7 +146,7 @@ public class ForecastFragment extends Fragment {
 
                 Uri.Builder uriBuilder = new Uri.Builder();
                 uriBuilder = Uri.parse(FORECAST_BASE_URL).buildUpon();
-                uriBuilder.appendQueryParameter(QUERY_PARAM, params[1]).
+                uriBuilder.appendQueryParameter(QUERY_PARAM, params[0]).
                         appendQueryParameter(UNITS_PARAM, units).
                         appendQueryParameter(FORMAT_PARAM, format).
                         appendQueryParameter(DAYS_PARAM, days).

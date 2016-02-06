@@ -45,7 +45,7 @@ public class DetailActivity extends AppCompatActivity {
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_detail);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle(R.string.app_name);
+        getSupportActionBar().setTitle(R.string.title_activity_detail);
     }
 
 
@@ -65,6 +65,7 @@ public class DetailActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.detail_settings) {
+            startActivity(new Intent(this, SettingsActivity.class));
             return true;
         }
 
