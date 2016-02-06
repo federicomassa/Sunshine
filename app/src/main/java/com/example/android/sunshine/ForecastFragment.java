@@ -2,7 +2,6 @@ package com.example.android.sunshine;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.media.audiofx.BassBoost;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
@@ -19,7 +18,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -64,24 +62,12 @@ public class ForecastFragment extends Fragment {
 
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-        String[] forecastArray = {
-                "Today - Sunny - 88/63",
-                "Tomorrow - Cloudy - 76/65",
-                "02/02 - Rainy - 69/53",
-                "03/02 - Rainy - 70/51",
-                "04/02 - Sunny - 86/61",
-                "05/02 - Cloudy - 88/45",
-                "06/02 - Sunny - 92/67"
-        };
-
-        List<String> weekForecast = new ArrayList<String>(Arrays.asList(forecastArray));
-
         mForecastAdapter =
                 new ArrayAdapter<>(
                         this.getActivity(),
                         R.layout.list_item_forecast,
                         R.id.list_item_forecast_textview,
-                        weekForecast);
+                        new ArrayList<String>());
 
         ListView mListView = (ListView) rootView.findViewById(R.id.listview_forecast);
         mListView.setAdapter(mForecastAdapter);
@@ -102,17 +88,24 @@ public class ForecastFragment extends Fragment {
 
         int id = item.getItemId();
         if (id == R.id.action_refresh) {
-            SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getContext());
-            String postalCode = pref.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
-            Log.v(LOG_TAG, "Fetching postal code from pref: " + postalCode);
-            final String city = "Pisa";
-            final String countryCode = "IT";
-            final String[] forecastParameters = new String[] {postalCode, city, countryCode};
-            FetchWeatherTask weatherTask = new FetchWeatherTask();
-            weatherTask.execute(forecastParameters);
+            updateWeather();
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        updateWeather();
+    }
+
+    public void updateWeather() {
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getContext());
+        String location = pref.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
+        final String[] forecastParameters = new String[] {location};
+        FetchWeatherTask weatherTask = new FetchWeatherTask();
+        weatherTask.execute(forecastParameters);
     }
 
 
