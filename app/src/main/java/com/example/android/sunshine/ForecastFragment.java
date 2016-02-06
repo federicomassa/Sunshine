@@ -91,6 +91,11 @@ public class ForecastFragment extends Fragment {
             updateWeather();
             return true;
         }
+        else if (id == R.id.action_map) {
+
+            showMap();
+            return true;
+        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -109,6 +114,17 @@ public class ForecastFragment extends Fragment {
         weatherTask.execute(forecastParameters);
     }
 
+    public void showMap() {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        String baseUri = "geo:0,0";
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getContext());
+        String location = pref.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
+        Uri.Builder uriBuilder = Uri.parse(baseUri).buildUpon();
+        uriBuilder.appendQueryParameter("q",location);
+        intent.setData(uriBuilder.build());
+        if (intent.resolveActivity(getContext().getPackageManager()) != null)
+            startActivity(intent);
+    }
 
     private class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
 
