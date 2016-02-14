@@ -108,7 +108,7 @@ public class ForecastFragment extends Fragment {
     public void updateWeather() {
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getContext());
         String location = pref.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
-        String temperature = pref.getString(getString(R.string.pref_temperature_key), getString(R.string.pref_temperature_default));
+        String temperature = pref.getString(getString(R.string.pref_units_key), getString(R.string.pref_units_metric));
         final String[] forecastParameters = new String[] {location, temperature};
         FetchWeatherTask weatherTask = new FetchWeatherTask();
         weatherTask.execute(forecastParameters);
